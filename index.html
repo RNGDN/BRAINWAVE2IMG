@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dive into the dream</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Base and Reset Styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 0 50px 0;
+        }
+
+        /* Heading Styles */
+        h1 {
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #4A90E2;
+        }
+
+        /* Prompt Styles */
+        #promptView {
+            padding: 15px;
+            border: 2px solid #4A90E2;
+            border-radius: 5px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        #promptView:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Image Styles */
+        #imageView {
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            max-width: 80%;
+        }
+
+        #imageView:hover {
+            transform: scale(1.03);
+        }
+    </style>
+
+<script>
+    let currentImage = "";
+    let currentPrompt = "";
+
+    async function getLatestData() {
+        try {
+            const imageResponse = await fetch('/latest-image.txt');
+            const imageName = await imageResponse.text();
+
+            const promptResponse = await fetch('/latest-prompt.txt');
+            const promptText = await promptResponse.text();
+
+            if (currentImage !== imageName) {
+                const imageUrl = imageName + '?t=' + new Date().getTime(); // Cache busting
+
+                // Fetch the image as a blob
+                const imageBlob = await fetch(imageUrl).then(response => response.blob());
+
+                // Create a local URL for the blob and set it as the image source
+                const imageObjectUrl = URL.createObjectURL(imageBlob);
+                document.getElementById('imageView').src = imageObjectUrl;
+
+                currentImage = imageName;
+            }
+
+            if (currentPrompt !== promptText) {
+                currentPrompt = promptText;
+                document.getElementById('promptView').textContent = `Prompt: ${currentPrompt}`;
+            }
+        } catch (error) {
+            console.error("Error fetching the latest data:", error);
+        }
+    }
+
+    setInterval(getLatestData, 500);
+</script>
+
+</head>
+<body>
+    <h1>Dive into the dream</h1>
+    <div id="promptView"></div>
+    <img id="imageView" src="" alt="Latest image will appear here">
+</body>
+</html>
